@@ -21,99 +21,99 @@ Policy: AmazonEC2ContainerRegistryFullAccess
 3) SSH to core node
 	
 4) Docker login
-  ```
-	aws ecr get-login --region us-east-1 --no-include-email
-	sudo docker login -u AWS -p <password> https://<account-id>.dkr.ecr.us-east-1.amazonaws.com
-  ```
+```
+aws ecr get-login --region us-east-1 --no-include-email
+sudo docker login -u AWS -p <password> https://<account-id>.dkr.ecr.us-east-1.amazonaws.com
+```
 
 5) Copy config.json to HDFS
-  ```
-	# copy it back to user home ~/.docker
-	mkdir -p ~/.docker
-	sudo cp /root/.docker/config.json 
-	sudo chmod 644 ~/.docker/config.json
+```
+# copy it back to user home ~/.docker
+mkdir -p ~/.docker
+sudo cp /root/.docker/config.json 
+sudo chmod 644 ~/.docker/config.json
 
-	#push on HDFS such all container can access it
-	hadoop fs -put ~/.docker/config.json /user/hadoop/
-  ```
+#push on HDFS such all container can access it
+hadoop fs -put ~/.docker/config.json /user/hadoop/
+```
 6) Create ECR and get endpoint 
   
-  ```
-	aws ecr create-repository --repository-name emr-docker-examples
-  ```
+```
+aws ecr create-repository --repository-name emr-docker-examples
+```
 
 7) Create docker directories
-  ```
-  mkdir pyspark
-  mkdir sparkr
-  vi pyspark/Dockerfile
-  vi sparkr/Dockerfile
-  ```
+```
+mkdir pyspark
+mkdir sparkr
+vi pyspark/Dockerfile
+vi sparkr/Dockerfile
+```
 
 8) Create Image #1 - pyspark - numpy
 
-  ```
-  mkdir pyspark
-  vi pyspark/Dockerfile
-  ```
+```
+mkdir pyspark
+vi pyspark/Dockerfile
+```
 
-  ```
-	FROM amazoncorretto:8
+```
+FROM amazoncorretto:8
 
-	RUN yum -y update
-	RUN yum -y install yum-utils
-	RUN yum -y groupinstall development
+RUN yum -y update
+RUN yum -y install yum-utils
+RUN yum -y groupinstall development
 
-	RUN yum list python3*
-	RUN yum -y install python3 python3-dev python3-pip python3-virtualenv
+RUN yum list python3*
+RUN yum -y install python3 python3-dev python3-pip python3-virtualenv
 
-	RUN python -V
-	RUN python3 -V
+RUN python -V
+RUN python3 -V
 
-	ENV PYSPARK_DRIVER_PYTHON python3
-	ENV PYSPARK_PYTHON python3
+ENV PYSPARK_DRIVER_PYTHON python3
+ENV PYSPARK_PYTHON python3
 
-	RUN pip3 install --upgrade pip
-	RUN pip3 install numpy panda
+RUN pip3 install --upgrade pip
+RUN pip3 install numpy panda
 
-	RUN python3 -c "import numpy as np"
-  ```
+RUN python3 -c "import numpy as np"
+```
 
 9) Create Image #2 - SparkR - randomforest
 
-  ```
-  mkdir sparkr
-  vi sparkr/Dockerfile
-  ```
-  
-  ```
-	FROM amazoncorretto:8
+```
+mkdir sparkr
+vi sparkr/Dockerfile
+```
 
-	RUN java -version
+```
+FROM amazoncorretto:8
 
-	RUN yum -y update
-	RUN amazon-linux-extras enable R3.4
+RUN java -version
 
-	RUN yum -y install R R-devel openssl-devel
-	RUN yum -y install curl
+RUN yum -y update
+RUN amazon-linux-extras enable R3.4
 
-	#setup R configs
-	RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
+RUN yum -y install R R-devel openssl-devel
+RUN yum -y install curl
 
-	RUN Rscript -e "install.packages('randomForest')"
+#setup R configs
+RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
+
+RUN Rscript -e "install.packages('randomForest')"
   ```
 
 10) Push to ECR
 
-  ```
-	sudo docker build -t local/pyspark-example pyspark/
-	sudo docker tag local/pyspark-example 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:pyspark-example
-	sudo docker push 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:pyspark-example
+```
+sudo docker build -t local/pyspark-example pyspark/
+sudo docker tag local/pyspark-example 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:pyspark-example
+sudo docker push 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:pyspark-example
 
-	sudo docker build -t local/sparkr-example sparkr/
-	sudo docker tag local/sparkr-example 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:sparkr-example
-	sudo docker push 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:sparkr-example
-  ```
+sudo docker build -t local/sparkr-example sparkr/
+sudo docker tag local/sparkr-example 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:sparkr-example
+sudo docker push 469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:sparkr-example
+```
 
 -----------------------JOB SUBMISSION-----------------------
 
