@@ -17,6 +17,7 @@ Policy: AmazonEC2ContainerRegistryFullAccess
 ```
 
 -----------------------DOCKER/ECR SETUP-----------------------
+
 3) SSH to core node
 	
 4) Docker login
@@ -49,7 +50,7 @@ Policy: AmazonEC2ContainerRegistryFullAccess
   vi sparkr/Dockerfile
   ```
 
-7) Create Image #1 - pyspark - numpy
+8) Create Image #1 - pyspark - numpy
 
   ```
   mkdir pyspark
@@ -78,7 +79,7 @@ Policy: AmazonEC2ContainerRegistryFullAccess
 	RUN python3 -c "import numpy as np"
   ```
 
-8) Create Image #2 - SparkR - randomforest
+9) Create Image #2 - SparkR - randomforest
 
   ```
   mkdir sparkr
@@ -102,7 +103,7 @@ Policy: AmazonEC2ContainerRegistryFullAccess
 	RUN Rscript -e "install.packages('randomForest')"
   ```
 
-9) Push to ECR
+10) Push to ECR
 
   ```
 	sudo docker build -t local/pyspark-example pyspark/
@@ -116,9 +117,9 @@ Policy: AmazonEC2ContainerRegistryFullAccess
 
 -----------------------JOB SUBMISSION-----------------------
 
-10) SSH to the master node
+11) SSH to the master node
 
-11) Create main.py and sparkR.R
+12) Create main.py and sparkR.R
 
 ```
 vi main.py
@@ -151,7 +152,7 @@ sparkR.session.stop()
 ```
 
 
-11) Job submit - pyspark
+13) Job submit - pyspark
 
 ```
 DOCKER_IMAGE_NAME=469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:pyspark-example
@@ -175,7 +176,7 @@ Check job:
 yarn logs --applicationId application_1574801282656_0023 | grep -C2 '\[\['
 ```
 
-11) Job submit - SparkR
+14) Job submit - SparkR
 
 ```
 DOCKER_IMAGE_NAME=469768379341.dkr.ecr.us-east-1.amazonaws.com/emr-docker-examples:sparkr-example
